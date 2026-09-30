@@ -1,0 +1,43 @@
+# Defaults shared by every experiment. Dataset/experiment configs override these keys.
+seed: 42
+window_s: 60            # window duration (seconds)
+L: 10                   # history length (windows)
+K: 5                    # forecast horizon (windows)
+stride: 1
+warmup_windows: 30      # first windows of a day: novelty/EWMA features still warming up -> no targets
+novelty_lookback: 30    # "new peer/port" = not seen in this many previous windows
+ewma_alpha: 0.1
+min_attack_flows: 3     # host/network-window labelled with a stage only with >= this many flows
+quiet_windows: 5        # an onset needs this many benign windows before it
+
+sampling:
+  benign_ratio: 10      # train only: keep all sequences touching an attack + this many benign per attack
+
+model:
+  cell: gru             # gru | lstm
+  emb: 64
+  hidden: 128
+  dropout: 0.1
+
+train:
+  epochs: 30
+  batch_size: 256
+  lr: 0.001
+  weight_decay: 0.0001
+  patience: 6
+  teacher_frac: 0.6     # scheduled sampling: teacher-forcing prob. decays to 0 over this share of epochs
+  lambdas: {dyn: 1.0, now: 0.5, fut: 1.0, hor: 1.0}
+  device: cpu
+  num_threads: 4
+
+forecast:
+  n_samples: 32
+
+eval:
+  target_fpr: 0.01
+  leads: [0, 1, 2, 3]
+  bootstrap: 1000
+
+ledger:
+  enabled: false
+  path: artifacts/ledger.sqlite

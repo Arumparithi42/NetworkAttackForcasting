@@ -1,0 +1,46 @@
+# Versioned mapping: dataset label (normalised: lower-case, non-alphanumerics -> single space)
+#   -> attack stage. See docs/LABEL_MAPPING.md for the justification of every row.
+# Special values:
+#   EXCLUDED           unknown / unmappable traffic, masked out of training and evaluation
+#   INFILTRATION_RULE  RECON_DISCOVERY if the flow source is internal, INITIAL_ACCESS_ATTEMPT if
+#                      external; if the source is unknown (CSV without IPs) -> `infiltration_unknown_src`
+version: 1
+infiltration_unknown_src: RECON_DISCOVERY
+labels:
+  # ---- benign
+  benign: BENIGN
+  normal: BENIGN
+  # ---- CSE-CIC-IDS2018
+  ftp bruteforce: INITIAL_ACCESS_ATTEMPT
+  ssh bruteforce: INITIAL_ACCESS_ATTEMPT
+  brute force web: INITIAL_ACCESS_ATTEMPT
+  brute force xss: INITIAL_ACCESS_ATTEMPT        # low-confidence ATT&CK fit (T1190)
+  sql injection: INITIAL_ACCESS_ATTEMPT
+  dos attacks goldeneye: IMPACT
+  dos attacks slowloris: IMPACT
+  dos attacks slowhttptest: IMPACT
+  dos attacks hulk: IMPACT
+  ddos attacks loic http: IMPACT
+  ddos attack loic udp: IMPACT
+  ddos attack hoic: IMPACT
+  infilteration: INFILTRATION_RULE               # (sic) spelling used in the 2018 CSVs
+  infiltration: INFILTRATION_RULE
+  bot: COMMAND_AND_CONTROL
+  # ---- CIC-IDS2017
+  ftp patator: INITIAL_ACCESS_ATTEMPT
+  ssh patator: INITIAL_ACCESS_ATTEMPT
+  dos slowloris: IMPACT
+  dos slowhttptest: IMPACT
+  dos hulk: IMPACT
+  dos goldeneye: IMPACT
+  ddos: IMPACT
+  heartbleed: INITIAL_ACCESS_ATTEMPT
+  web attack brute force: INITIAL_ACCESS_ATTEMPT
+  web attack xss: INITIAL_ACCESS_ATTEMPT
+  web attack sql injection: INITIAL_ACCESS_ATTEMPT
+  portscan: RECON_DISCOVERY
+  # ---- CTU-13 (after the loader collapses the descriptive labels)
+  background: EXCLUDED
+  botnet cc: COMMAND_AND_CONTROL
+  botnet scan: RECON_DISCOVERY
+  botnet other: EXCLUDED

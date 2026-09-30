@@ -1,0 +1,128 @@
+source: https://github.com/mitre-attack/attack-stix-data (enterprise-attack.json)
+attack_version: '19.2'
+tactics:
+  TA0043: Reconnaissance
+  TA0001: Initial Access
+  TA0002: Execution
+  TA0003: Persistence
+  TA0004: Privilege Escalation
+  TA0005: Stealth
+  TA0006: Credential Access
+  TA0007: Discovery
+  TA0008: Lateral Movement
+  TA0009: Collection
+  TA0011: Command and Control
+  TA0010: Exfiltration
+  TA0040: Impact
+techniques:
+  T1595:
+    name: Active Scanning
+    tactics:
+    - TA0043
+  T1595.001:
+    name: Scanning IP Blocks
+    tactics:
+    - TA0043
+  T1595.002:
+    name: Vulnerability Scanning
+    tactics:
+    - TA0043
+  T1046:
+    name: Network Service Discovery
+    tactics:
+    - TA0007
+  T1110:
+    name: Brute Force
+    tactics:
+    - TA0006
+  T1110.001:
+    name: Password Guessing
+    tactics:
+    - TA0006
+  T1190:
+    name: Exploit Public-Facing Application
+    tactics:
+    - TA0001
+  T1498:
+    name: Network Denial of Service
+    tactics:
+    - TA0040
+  T1498.001:
+    name: Direct Network Flood
+    tactics:
+    - TA0040
+  T1499:
+    name: Endpoint Denial of Service
+    tactics:
+    - TA0040
+  T1499.002:
+    name: Service Exhaustion Flood
+    tactics:
+    - TA0040
+  T1499.003:
+    name: Application Exhaustion Flood
+    tactics:
+    - TA0040
+  T1071:
+    name: Application Layer Protocol
+    tactics:
+    - TA0011
+  T1071.001:
+    name: Web Protocols
+    tactics:
+    - TA0011
+  T1095:
+    name: Non-Application Layer Protocol
+    tactics:
+    - TA0011
+  T1571:
+    name: Non-Standard Port
+    tactics:
+    - TA0011
+  T1021:
+    name: Remote Services
+    tactics:
+    - TA0008
+  T1021.001:
+    name: Remote Desktop Protocol
+    tactics:
+    - TA0008
+  T1021.002:
+    name: SMB/Windows Admin Shares
+    tactics:
+    - TA0008
+  T1021.004:
+    name: SSH
+    tactics:
+    - TA0008
+  T1078:
+    name: Valid Accounts
+    tactics:
+    - TA0005
+    - TA0003
+    - TA0004
+    - TA0001
+  T1041:
+    name: Exfiltration Over C2 Channel
+    tactics:
+    - TA0010
+  T1048:
+    name: Exfiltration Over Alternative Protocol
+    tactics:
+    - TA0010
+  T1566:
+    name: Phishing
+    tactics:
+    - TA0001
+  T1204:
+    name: User Execution
+    tactics:
+    - TA0002
+  T1135:
+    name: Network Share Discovery
+    tactics:
+    - TA0007
+  T1018:
+    name: Remote System Discovery
+    tactics:
+    - TA0007

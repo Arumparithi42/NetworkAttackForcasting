@@ -9,3 +9,8 @@ __pycache__/
 .venv/
 .ipynb_checkpoints/
 .DS_Store
+logs/
+.venv
+*.sqlite
+*.key.pem
+.pytest_cache/

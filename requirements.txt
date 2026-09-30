@@ -1,0 +1,16 @@
+# Core (offline) dependencies. Tested with Python 3.11 and the versions in brackets.
+# CPU-only PyTorch is enough:  pip install torch --index-url https://download.pytorch.org/whl/cpu
+torch>=2.2            # (2.14)
+numpy>=1.26           # (2.4)
+pandas>=2.1           # (3.0)
+pyarrow>=14           # (25)
+scikit-learn>=1.4     # (1.9)
+captum>=0.7           # (0.9)   Integrated Gradients
+dpkt>=1.9.8           # PCAP parsing
+pyyaml>=6
+streamlit>=1.40       # (1.64)
+plotly>=5.20          # (7.1)
+networkx>=3.2
+matplotlib>=3.8
+cryptography>=42      # Ed25519 signatures for the evidence ledger
+pytest>=8

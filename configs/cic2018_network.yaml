@@ -1,0 +1,50 @@
+# Network-level world model on the CSE-CIC-IDS2018 processed flow CSVs.
+# The daily CSVs (except 20-02) have NO IP columns, so the state is one vector per window
+# for the whole monitored network (entity = network).
+name: cic2018_network
+entity: network
+source: cic_csv
+flavour: cic2018
+raw_dir: data/raw/cic2018
+interim_dir: data/interim/cic2018
+processed_dir: data/processed/cic2018_network
+artifact_dir: artifacts/cic2018_network
+utc_offset_hours: -4          # CSV local time = UTC-4 (verified by matching against the PCAPs)
+clock_12h_threshold: 8        # 12-hour clock without AM/PM: hours < 8 are afternoon (+12 h)
+internal_cidrs: ["172.31.0.0/16"]
+
+files:
+  "2018-02-14": Wednesday-14-02-2018_TrafficForML_CICFlowMeter.csv
+  "2018-02-15": Thursday-15-02-2018_TrafficForML_CICFlowMeter.csv
+  "2018-02-16": Friday-16-02-2018_TrafficForML_CICFlowMeter.csv
+  "2018-02-20": Thuesday-20-02-2018_TrafficForML_CICFlowMeter.csv
+  "2018-02-21": Wednesday-21-02-2018_TrafficForML_CICFlowMeter.csv
+  "2018-02-22": Thursday-22-02-2018_TrafficForML_CICFlowMeter.csv
+  "2018-02-23": Friday-23-02-2018_TrafficForML_CICFlowMeter.csv
+  "2018-02-28": Wednesday-28-02-2018_TrafficForML_CICFlowMeter.csv
+  "2018-03-01": Thursday-01-03-2018_TrafficForML_CICFlowMeter.csv
+  "2018-03-02": Friday-02-03-2018_TrafficForML_CICFlowMeter.csv
+
+# Days whose CSV is unusable for temporal modelling (see docs/DATA_NOTES.md): the published file
+# contains only ~20-40 benign flows per 20 minutes next to hundreds of thousands of attack flows,
+# i.e. the benign background was lost (the files hit the 1,048,575-row spreadsheet limit).
+excluded_days:
+  "2018-02-16": "benign background missing (truncated CSV)"
+  "2018-02-21": "benign background missing (truncated CSV)"
+
+protocol: A
+protocols:
+  A:   # per-family chronological: first occurrence -> train, later occurrence -> test
+    train: ["2018-02-14", "2018-02-15", "2018-02-22", "2018-02-28"]
+    test: ["2018-02-20", "2018-02-23", "2018-03-01"]
+    split_days:                       # one day split in time: before -> train, after -> test
+      "2018-03-02": "2018-03-02T16:30:00Z"
+  B:   # strict global chronology: everything up to 22-02 trains, later days test
+    train: ["2018-02-14", "2018-02-15", "2018-02-20", "2018-02-22"]
+    test: ["2018-02-23", "2018-02-28", "2018-03-01", "2018-03-02"]
+    split_days: {}
+
+validation:                            # blocked hold-out inside training days
+  block_windows: 60                    # 1-hour blocks ...
+  every: 4                             # ... every 4th block goes to validation
+  offset: 2

@@ -1,0 +1,5 @@
+xgboost>=2.0          # B3 baseline (skipped automatically if missing)
+scapy>=2.5            # PCAP unit test fixtures / small captures
+nfstream>=6.5         # alternative PCAP -> flow extractor (Linux/macOS)
+web3>=6               # optional: anchor ledger Merkle roots on a LOCAL chain (Hardhat/Anvil)
+py-solc-x>=2
