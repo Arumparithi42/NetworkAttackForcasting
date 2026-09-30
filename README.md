@@ -102,7 +102,7 @@ python scripts/extract_cic2018_pcaps.py --day Thursday-01-03-2018     # streams 
 python scripts/extract_cic2018_pcaps.py --day Wednesday-28-02-2018    # streams 53 GB
 python notebooks/01_eda_label_timeline.py                  # optional: see the data problems we fix
 PY=python bash scripts/run_all.sh                          # preprocess → train → ablations → reports
-pytest -q                                                  # 33 tests (causality, leakage, model, ledger, …)
+pytest -q                                                  # 33 tests (+1 slow dashboard test: RUN_SLOW=1)
 ```
 
 Individual steps: `scripts/preprocess.py --config …`, `train.py --config … [--protocol B] [--set key=value]`,
@@ -117,7 +117,43 @@ the raw PCAPs with labels transferred by victim identification).
 ## Results
 
 <!-- RESULTS:START -->
-See `reports/cic2018_network/RESULTS.md` and `reports/cic2018_host/RESULTS.md`.
+**Host level – infiltration, raw PCAPs (train 28-02 → test 01-03), 433 hosts, 67 features** – test windows: 231,510 (positives 710); onsets for early warning: 45
+
+| Model | PR-AUC [95% CI] | PR-AUC onset | F1 | FPR | Recall T−1 | Recall T−2 |
+|---|---|---|---|---|---|---|
+| World model | 0.142 [0.05, 0.26] | 0.010 | 0.131 | 0.0112 | 0.09 | 0.13 |
+| XGBoost (lagged history) | 0.145 [0.06, 0.25] | 0.028 | 0.261 | 0.0030 | 0.16 | 0.13 |
+| LogReg (lagged history) | 0.070 [0.03, 0.12] | 0.021 | 0.073 | 0.0002 | 0.00 | 0.07 |
+| LogReg (current window) | 0.145 [0.06, 0.24] | 0.014 | 0.210 | 0.0019 | 0.09 | 0.13 |
+| Persistence (oracle current label) | 0.359 [0.21, 0.50] | 0.001 | 0.560 | 0.0002 | 0.00 | 0.00 |
+
+World-model PR-AUC across seeds: 0.156 ± 0.024 (n=3 seeds).
+
+**Network level – 8 CSV days, Protocol A (per-family chronological)** – test windows: 1,848 (positives 552); onsets for early warning: 6
+
+| Model | PR-AUC [95% CI] | PR-AUC onset | F1 | FPR | Recall T−1 | Recall T−2 |
+|---|---|---|---|---|---|---|
+| World model | 0.610 [0.33, 0.80] | 0.026 | 0.558 | 0.0108 | 0.00 | 0.00 |
+| XGBoost (lagged history) | 0.683 [0.43, 0.84] | 0.026 | 0.545 | 0.0046 | 0.00 | 0.00 |
+| LogReg (lagged history) | 0.350 [0.19, 0.54] | 0.028 | 0.415 | 0.3519 | 0.33 | 0.33 |
+| LogReg (current window) | 0.317 [0.17, 0.51] | 0.025 | 0.224 | 0.3511 | 0.33 | 0.33 |
+| Persistence (oracle current label) | 0.911 [0.81, 0.97] | 0.028 | 0.936 | 0.0054 | 0.00 | 0.00 |
+
+World-model PR-AUC across seeds: 0.532 ± 0.101 (n=3 seeds).
+
+Protocol B (strict global chronology, attack families unseen in training): world model PR-AUC 0.449, XGBoost 0.604, LogReg (current) 0.420.
+
+**What the numbers say**
+
+- *Continuation vs onset.* Inside an ongoing attack every model scores high (network PR-AUC on ongoing windows ≈ 0.99), but the base rate there is already very high – continuation is easy. On currently-benign windows (onset) PR-AUC stays near the base rate for every model: no reliable pre-onset warning on this data.
+- *World model vs baselines.* The world model is on par with the current-window logistic regression and XGBoost at host level and below XGBoost at network level; seed-to-seed spread is large, and ablation differences within that spread are not meaningful.
+- *Dynamics.* Removing the dynamics loss (A1) gives PR-AUC 0.625 (network) / 0.122 (host) vs 0.610 / 0.142: the learned dynamics do not measurably help the attack forecast here. The mean next-state prediction is better than persistence on validation days but not on the test days (network MSE k=1: 0.365 vs 0.315) – a day-to-day distribution shift.
+- *Calibration and explanations work.* Host-level ECE ≈ 0.001; the IG deletion test shows the attributed features drive the forecast (see reports).
+- *Synthetic sanity check* (`tests/test_model.py::test_toy_world…`): when a 3-window precursor trend exists, the world model reaches onset PR-AUC ≈ 0.50 vs 0.10 for a current-window classifier (chance 0.09) over 3 seeds – the model can exploit precursors when the data contains them.
+
+Full tables, confidence intervals, ablations and figures: [`reports/cic2018_host/RESULTS.md`](reports/cic2018_host/RESULTS.md), [`reports/cic2018_network/RESULTS.md`](reports/cic2018_network/RESULTS.md).
+
+![dashboard](docs/img/dashboard_overview.png)
 <!-- RESULTS:END -->
 
 ## Repository layout

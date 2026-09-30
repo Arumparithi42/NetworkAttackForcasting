@@ -37,11 +37,13 @@ def network(name="network", art="artifacts/cic2018_network/main", flows_day="201
     copy_artifact(src, out / "artifact")
     proto = cfg["protocols"][cfg["protocol"]]
     days = list(proto["test"]) + list((proto.get("split_days") or {}).keys())
+    tl = pd.read_parquet(src / "test_forecasts.parquet")
     for day in days:
         d = out / "replay" / day
         d.mkdir(parents=True, exist_ok=True)
         pd.read_parquet(resolve(cfg["processed_dir"]) / f"states_{day}.parquet").to_parquet(d / "states.parquet")
         pd.read_parquet(resolve(cfg["processed_dir"]) / f"labels_{day}.parquet").to_parquet(d / "labels.parquet")
+        tl[tl["day"] == day].to_parquet(d / "timeline.parquet", index=False)
         if day == flows_day:
             f = pd.read_parquet(resolve(cfg["interim_dir"]) / f"flows_{day}.parquet")
             f[[c for c in FLOW_COLS if c in f]].to_parquet(d / "flows.parquet", index=False)
@@ -68,6 +70,7 @@ def host(name="host", art="artifacts/cic2018_host/main", day="2018-03-01", n_hos
     d.mkdir(parents=True, exist_ok=True)
     states[states["host"].isin(keep)].to_parquet(d / "states.parquet", index=False)
     labels[labels["host"].isin(keep)].to_parquet(d / "labels.parquet", index=False)
+    fc[fc["host"].isin(keep)].to_parquet(d / "timeline.parquet", index=False)
     frames = []
     for p in (resolve(cfg["flows_dir"]) / day).glob("*.parquet"):
         ips = IP_RE.findall(p.stem)

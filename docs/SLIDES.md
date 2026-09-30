@@ -51,7 +51,27 @@ Visual: timeline "benign → probing → access attempts" with *detection* marke
 ## Slide 4 – Results (held-out test days; real numbers from `reports/`)
 
 <!-- SLIDE4:START -->
-Filled from `reports/*/RESULTS.md`.
+**Host level (infiltration, PCAP)** – test windows: 231,510 (positives 710); onsets for early warning: 45
+
+| Model | PR-AUC [95% CI] | PR-AUC onset | F1 | FPR | Recall T−1 | Recall T−2 |
+|---|---|---|---|---|---|---|
+| World model | 0.142 [0.05, 0.26] | 0.010 | 0.131 | 0.0112 | 0.09 | 0.13 |
+| XGBoost (lagged history) | 0.145 [0.06, 0.25] | 0.028 | 0.261 | 0.0030 | 0.16 | 0.13 |
+| LogReg (lagged history) | 0.070 [0.03, 0.12] | 0.021 | 0.073 | 0.0002 | 0.00 | 0.07 |
+| LogReg (current window) | 0.145 [0.06, 0.24] | 0.014 | 0.210 | 0.0019 | 0.09 | 0.13 |
+| Persistence (oracle current label) | 0.359 [0.21, 0.50] | 0.001 | 0.560 | 0.0002 | 0.00 | 0.00 |
+
+**Network level (8 days, CSV)** – test windows: 1,848 (positives 552); onsets for early warning: 6
+
+| Model | PR-AUC [95% CI] | PR-AUC onset | F1 | FPR | Recall T−1 | Recall T−2 |
+|---|---|---|---|---|---|---|
+| World model | 0.610 [0.33, 0.80] | 0.026 | 0.558 | 0.0108 | 0.00 | 0.00 |
+| XGBoost (lagged history) | 0.683 [0.43, 0.84] | 0.026 | 0.545 | 0.0046 | 0.00 | 0.00 |
+| LogReg (lagged history) | 0.350 [0.19, 0.54] | 0.028 | 0.415 | 0.3519 | 0.33 | 0.33 |
+| LogReg (current window) | 0.317 [0.17, 0.51] | 0.025 | 0.224 | 0.3511 | 0.33 | 0.33 |
+| Persistence (oracle current label) | 0.911 [0.81, 0.97] | 0.028 | 0.936 | 0.0054 | 0.00 | 0.00 |
+
+Message: calibrated, explainable forecasts; continuation forecast strong; **onset forecasting not demonstrated on CIC-IDS2018** (few precursors) – world model ≈ baselines; synthetic check shows the mechanism works when precursors exist.
 <!-- SLIDE4:END -->
 
 Key figures: `reports/cic2018_host/timeline_*.png`, `reports/*/lead_time.png`,

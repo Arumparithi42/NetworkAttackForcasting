@@ -1,0 +1,99 @@
+{
+ "seed": 42,
+ "window_s": 60,
+ "L": 10,
+ "K": 5,
+ "stride": 1,
+ "warmup_windows": 30,
+ "novelty_lookback": 30,
+ "ewma_alpha": 0.1,
+ "min_attack_flows": 3,
+ "quiet_windows": 5,
+ "sampling": {
+  "benign_ratio": 5
+ },
+ "model": {
+  "cell": "gru",
+  "emb": 64,
+  "hidden": 64,
+  "dropout": 0.1
+ },
+ "train": {
+  "epochs": 25,
+  "batch_size": 512,
+  "lr": 0.001,
+  "weight_decay": 0.0001,
+  "patience": 6,
+  "teacher_frac": 0.6,
+  "lambdas": {
+   "dyn": 1.0,
+   "now": 0.5,
+   "fut": 1.0,
+   "hor": 1.0
+  },
+  "device": "cpu",
+  "num_threads": 4
+ },
+ "forecast": {
+  "n_samples": 32
+ },
+ "eval": {
+  "target_fpr": 0.01,
+  "leads": [
+   0,
+   1,
+   2,
+   3
+  ],
+  "bootstrap": 1000
+ },
+ "ledger": {
+  "enabled": false,
+  "path": "artifacts/ledger.sqlite"
+ },
+ "name": "cic2018_host",
+ "entity": "host",
+ "source": "pcap_flows",
+ "flows_dir": "data/interim/pcap_flows",
+ "raw_dir": "data/raw/cic2018",
+ "interim_dir": "data/interim/cic2018",
+ "processed_dir": "data/processed/cic2018_host",
+ "artifact_dir": "artifacts/cic2018_host",
+ "utc_offset_hours": -4,
+ "clock_12h_threshold": 8,
+ "internal_cidrs": [
+  "172.31.0.0/16"
+ ],
+ "with_packet": true,
+ "min_active_windows": 20,
+ "capture_window_utc": [
+  "12:00",
+  "21:45"
+ ],
+ "files": {
+  "2018-02-28": "Wednesday-28-02-2018_TrafficForML_CICFlowMeter.csv",
+  "2018-03-01": "Thursday-01-03-2018_TrafficForML_CICFlowMeter.csv"
+ },
+ "label_matching": {
+  "min_victim_matches": 100,
+  "source_outlier_factor": 5.0,
+  "min_target_share": 0.75
+ },
+ "protocol": "A",
+ "protocols": {
+  "A": {
+   "train": [
+    "2018-02-28"
+   ],
+   "test": [
+    "2018-03-01"
+   ],
+   "split_days": {}
+  }
+ },
+ "validation": {
+  "block_windows": 60,
+  "every": 4,
+  "offset": 2
+ }
+}

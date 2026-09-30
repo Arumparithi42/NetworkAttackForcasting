@@ -44,8 +44,8 @@ INF = '<span class="badge inf">INFERRED</span>'
 PRED = '<span class="badge pred">PREDICTED</span>'
 
 
-def card(col, title, value, sub="", colour=None):
-    style = f"color:{colour}" if colour else ""
+def card(col, title, value, sub="", colour=None, small=False):
+    style = (f"color:{colour};" if colour else "") + ("font-size:1.05rem;" if small else "")
     col.markdown(f'<div class="card"><h4>{title}</h4><div class="v" style="{style}">{value}</div>'
                  f'<div class="s">{sub}</div></div>', unsafe_allow_html=True)
 
@@ -87,11 +87,35 @@ def get_day(scn_name: str, day: str):
 
 @st.cache_data(show_spinner="Running the world model over the whole day…")
 def get_timeline(scn_name: str, day: str):
+    """Precomputed forecasts (exported by the experiment) when available, else live inference."""
     sc = get_scenarios()[scn_name]
     fc = get_forecaster(sc["artifact"])
     states, labels, flows = get_day(scn_name, day)
-    ctx = fc.context_from_states(states)
-    return fc.timeline(ctx)
+    pre = precomputed_timeline(sc, day, states, fc)
+    if pre is not None:
+        return pre
+    return fc.timeline(fc.context_from_states(states))
+
+
+def precomputed_timeline(sc, day, states, fc):
+    cands = [Path(sc["days"][day]["states"]).parent / "timeline.parquet",
+             Path(sc["artifact"]) / "test_forecasts.parquet"]
+    for p in cands:
+        if not p.exists():
+            continue
+        f = pd.read_parquet(p)
+        if "day" in f.columns:
+            f = f[f["day"] == day]
+        f = f[f["host"].isin(states["host"].unique())]
+        if f.empty:
+            continue
+        keep = ["host", "t", "window", "p_within", "surprise_pct"] + \
+               [c for c in f.columns if c.startswith("now_") or (c[:1] == "k" and "_" in c and c[1].isdigit())]
+        f = f[keep].copy()
+        f["time"] = pd.to_datetime(f["window"] * fc.cfg["window_s"], unit="s", utc=True)
+        f["alert"] = f["p_within"] >= fc.threshold
+        return f
+    return None
 
 
 def get_ctx(scn_name, day, host):
@@ -129,7 +153,20 @@ windows = sorted(tl["window"].unique())
 ws = fc.cfg["window_s"]
 fmt_w = lambda w: pd.Timestamp(int(w) * ws, unit="s", tz="UTC").strftime("%H:%M UTC")  # noqa: E731
 default_w = windows[len(windows) // 3]
-now_w = st.sidebar.select_slider("Now (replay clock)", options=windows, value=default_w, format_func=fmt_w)
+key_now = f"now_{scn}_{day}"
+if key_now not in st.session_state or st.session_state[key_now] not in windows:
+    st.session_state[key_now] = default_w
+alert_windows = sorted(tl.loc[tl["alert"], "window"].unique())
+b1, b2 = st.sidebar.columns(2)
+if b1.button("⏮ prev alert", width="stretch"):
+    prev = [w for w in alert_windows if w < st.session_state[key_now]]
+    if prev:
+        st.session_state[key_now] = prev[-1]
+if b2.button("next alert ⏭", width="stretch"):
+    nxt = [w for w in alert_windows if w > st.session_state[key_now]]
+    if nxt:
+        st.session_state[key_now] = nxt[0]
+now_w = st.sidebar.select_slider("Now (replay clock)", options=windows, key=key_now, format_func=fmt_w)
 show_truth = st.sidebar.toggle("Show dataset label (not available in deployment)", value=False)
 samples = st.sidebar.select_slider("Monte-Carlo futures", options=[8, 16, 32, 64], value=32)
 st.sidebar.markdown(f"**Horizon:** K = {fc.K} windows × {ws}s · **History:** L = {fc.L}")
@@ -159,7 +196,7 @@ with tabs[0]:
          f"MC band {pred['band_5_95'][0]:.0%}–{pred['band_5_95'][1]:.0%}")
     stage = pred["most_likely_future_stage"]
     card(c[2], "Predicted stage", STAGE_LABEL.get(stage, "—") if stage else "—",
-         ", ".join(f"{t['id']} {t['name']}" for t in tactic_refs(stage)) or "below alert threshold")
+         ", ".join(f"{t['id']} {t['name']}" for t in tactic_refs(stage)) or "below alert threshold", small=True)
     hs = pred["first_crossing_step"]
     card(c[3], "Forecast horizon", f"t+{hs}" if hs else "none", f"{hs * ws // 60} min ahead" if hs else f"within {fc.K} windows")
     sp = pred.get("surprise_percentile")

@@ -1,9 +1,20 @@
 # SIH26153 — Network Attack Forecasting World Model
 ## Complete Architecture & Implementation Blueprint
 
-> Status: **design blueprint** (no code or results yet). Every number in this document is either a
-> *configuration choice* or is explicitly marked as *illustrative*. There are **no performance
-> results** in this document; results must come from running the experiments in §17.
+> Status: this was the **design blueprint** written before implementation. Every number in it is a
+> configuration choice or explicitly illustrative; real results are in `reports/*/RESULTS.md`.
+>
+> **Where the implementation deliberately differs from this plan** (reasons in `docs/DATA_NOTES.md`):
+> * Only CSE-CIC-IDS2018 is used. The CTU-13, CIC-IDS2017 and corrected-dataset download hosts were
+>   not reachable from the build environment; the loaders for CIC-IDS2017 and the CTU-13 label
+>   mapping exist, but no CTU-13 / cross-dataset results are reported.
+> * The daily CSVs have no IP columns, so the host-level model is built from the **raw per-host
+>   PCAPs** of the two infiltration days (116 GB streamed) with labels transferred from the CSV;
+>   the network-level model uses all 8 usable CSV days. Days 16-02 and 21-02 are excluded.
+> * Protocol A uses 20-02 (DDoS) as the Impact test day instead of 16-02/21-02 (truncated files).
+> * Model classes are the 5 stages with ground truth; host windows use 67 features (as planned),
+>   network windows 38.
+> * Additional data fixes not anticipated here: 12-hour clock, contradictory duplicate labels.
 
 ---
 

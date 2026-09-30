@@ -8,21 +8,21 @@ Test samples: 1848 (positives: 552); train 1617, val 414.
 
 | Model | Precision | Recall | F1 | FPR | ROC-AUC | PR-AUC (95% CI) | PR-AUC onset (95% CI) | PR-AUC ongoing | Brier | ECE |
 |---|---|---|---|---|---|---|---|---|---|---|
-| World model | 0.806 | 0.420 | 0.552 | 0.0432 | 0.696 | 0.608 [0.33, 0.80] | 0.026 [0.01, 0.06] | 0.988 | 0.284 | 0.308 |
-| XGBoost (lagged) | 0.974 | 0.408 | 0.575 | 0.0046 | 0.732 | 0.627 [0.37, 0.80] | 0.027 [0.01, 0.05] | 0.988 | 0.173 | 0.153 |
-| LogReg (lagged) | 0.382 | 0.505 | 0.435 | 0.3488 | 0.614 | 0.363 [0.19, 0.57] | 0.027 [0.01, 0.06] | 0.988 | 0.366 | 0.338 |
-| LogReg (current window) | 0.303 | 0.359 | 0.329 | 0.3511 | 0.571 | 0.328 [0.18, 0.52] | 0.025 [0.01, 0.05] | 0.988 | 0.379 | 0.367 |
+| World model | 0.940 | 0.397 | 0.558 | 0.0108 | 0.708 | 0.610 [0.33, 0.80] | 0.026 [0.01, 0.06] | 0.988 | 0.269 | 0.289 |
+| XGBoost (lagged) | 0.972 | 0.379 | 0.545 | 0.0046 | 0.758 | 0.683 [0.43, 0.84] | 0.026 [0.01, 0.05] | 0.990 | 0.159 | 0.149 |
+| LogReg (lagged) | 0.367 | 0.478 | 0.415 | 0.3519 | 0.618 | 0.350 [0.19, 0.54] | 0.028 [0.01, 0.06] | 0.986 | 0.359 | 0.330 |
+| LogReg (current window) | 0.218 | 0.230 | 0.224 | 0.3511 | 0.576 | 0.317 [0.17, 0.51] | 0.025 [0.01, 0.05] | 0.986 | 0.361 | 0.332 |
 | Persistence (oracle label) | 0.986 | 0.891 | 0.936 | 0.0054 | 0.943 | 0.911 [0.81, 0.97] | 0.028 [0.01, 0.05] | 0.986 | 0.036 | 0.036 |
 
 *Persistence uses the TRUE current label (an oracle detector) – it is a reference, not a deployable model.* *Onset = windows whose own label is benign; ongoing = windows already inside an attack.*
 
-World model over 3 seeds: PR-AUC 0.564 ± 0.038, onset PR-AUC 0.027 ± 0.002, F1 0.540 ± 0.016, FPR 0.050 ± 0.031. Differences between ablations smaller than this seed spread are not meaningful.
+World model over 3 seeds: PR-AUC 0.532 ± 0.101, onset PR-AUC 0.026 ± 0.000, F1 0.516 ± 0.062, FPR 0.081 ± 0.105. Differences between ablations smaller than this seed spread are not meaningful.
 
 ## Early warning (recall at the validation threshold)
 
 | Model | lead 0 (onset window) | T−1 | T−2 | T−3 | # onsets |
 |---|---|---|---|---|---|
-| World model | 0.17 | 0.00 | 0.17 | 0.00 | 6 |
+| World model | 0.17 | 0.00 | 0.00 | 0.00 | 6 |
 | XGBoost (lagged) | 0.00 | 0.00 | 0.00 | 0.00 | 6 |
 | LogReg (lagged) | 0.33 | 0.33 | 0.33 | 0.33 | 6 |
 | LogReg (current window) | 0.33 | 0.33 | 0.33 | 0.33 | 6 |
@@ -32,33 +32,33 @@ World model over 3 seeds: PR-AUC 0.564 ± 0.038, onset PR-AUC 0.027 ± 0.002, F1
 
 | step k | 1 | 2 | 3 | 4 | 5 |
 |---|---|---|---|---|---|
-| World model MSE | 0.340 | 0.343 | 0.349 | 0.356 | 0.366 |
-| Persistence MSE | 0.314 | 0.282 | 0.313 | 0.323 | 0.326 |
+| World model MSE | 0.365 | 0.372 | 0.381 | 0.387 | 0.396 |
+| Persistence MSE | 0.315 | 0.283 | 0.314 | 0.324 | 0.327 |
 
 ## Future-stage macro-F1 per step (world model)
 
-k=1: 0.400 | k=2: 0.416 | k=3: 0.430 | k=4: 0.445 | k=5: 0.441
+k=1: 0.431 | k=2: 0.436 | k=3: 0.434 | k=4: 0.435 | k=5: 0.431
 
 ## Explainability sanity check (deletion test)
 
-Replacing the top-5 IG features by benign values lowers P(attack) by 0.803 on average vs 0.001 for 5 random features (n=40 highest-risk test forecasts).
+Replacing the top-5 IG features by benign values lowers P(attack) by 0.773 on average vs 0.036 for 5 random features (n=40 highest-risk test forecasts).
 
 ## Ablations (world model only)
 
 | Run | What changed | PR-AUC | PR-AUC onset | F1 | FPR | recall T−1 | recall T−2 | state MSE k=1 / k=5 |
 |---|---|---|---|---|---|---|---|---|
-| A1_no_dynamics_loss | dynamics loss weight 0 (a sequence classifier) | 0.639 | 0.029 | 0.564 | 0.0046 | 0.00 | 0.00 | 1.055 / 1.235 |
-| A2_direct_heads | K direct heads on h_t instead of recursive rollout | 0.346 | 0.025 | 0.270 | 0.1867 | 0.17 | 0.17 | 0.382 / 0.396 |
-| A3_L1 | history length 1 (no temporal context) | 0.393 | 0.025 | 0.163 | 0.0278 | 0.00 | 0.00 | 0.392 / 0.394 |
-| A3_L20 | history length 20 | 0.545 | 0.025 | 0.517 | 0.0293 | 0.00 | 0.00 | 0.346 / 0.371 |
-| A3_L5 | history length 5 | 0.436 | 0.027 | 0.471 | 0.1620 | 0.17 | 0.17 | 0.351 / 0.364 |
-| A6_teacher_forcing_only | always teacher forcing (no scheduled sampling) | 0.367 | 0.026 | 0.458 | 0.3472 | 0.33 | 0.33 | 0.321 / 0.350 |
-| A7_lstm | LSTM cell instead of GRU | 0.371 | 0.025 | 0.420 | 0.2855 | 0.17 | 0.17 | 0.355 / 0.384 |
-| main | GRU world model, L=10, K=5, scheduled sampling (reference) | 0.608 | 0.026 | 0.552 | 0.0432 | 0.00 | 0.17 | 0.340 / 0.366 |
-| protocolB | Protocol B: strict global chronology (unseen families in test) | 0.456 | 0.039 | 0.106 | 0.0103 | 0.14 | 0.00 | 0.474 / 0.516 |
-| residual | residual dynamics (predict change of state) | 0.351 | 0.026 | 0.391 | 0.3457 | 0.33 | 0.33 | 0.300 / 0.402 |
-| seed1 | same as main, seed 1 | 0.569 | 0.025 | 0.551 | 0.0162 | 0.00 | 0.00 | 0.352 / 0.380 |
-| seed2 | same as main, seed 2 | 0.514 | 0.031 | 0.517 | 0.0918 | 0.17 | 0.17 | 0.352 / 0.371 |
+| A1_no_dynamics_loss | dynamics loss weight 0 (a sequence classifier) | 0.625 | 0.034 | 0.557 | 0.0023 | 0.00 | 0.00 | 1.017 / 1.147 |
+| A2_direct_heads | K direct heads on h_t instead of recursive rollout | 0.328 | 0.025 | 0.271 | 0.2693 | 0.17 | 0.17 | 0.383 / 0.384 |
+| A3_L1 | history length 1 (no temporal context) | 0.341 | 0.026 | 0.375 | 0.3503 | 0.33 | 0.33 | 0.403 / 0.393 |
+| A3_L20 | history length 20 | 0.486 | 0.025 | 0.411 | 0.0378 | 0.00 | 0.17 | 0.348 / 0.366 |
+| A3_L5 | history length 5 | 0.596 | 0.027 | 0.569 | 0.0208 | 0.00 | 0.00 | 0.360 / 0.366 |
+| A6_teacher_forcing_only | always teacher forcing (no scheduled sampling) | 0.415 | 0.025 | 0.435 | 0.2245 | 0.17 | 0.17 | 0.326 / 0.357 |
+| A7_lstm | LSTM cell instead of GRU | 0.430 | 0.027 | 0.510 | 0.2639 | 0.17 | 0.33 | 0.351 / 0.370 |
+| main | GRU world model, L=10, K=5, scheduled sampling (reference) | 0.610 | 0.026 | 0.558 | 0.0108 | 0.00 | 0.00 | 0.365 / 0.396 |
+| protocolB | Protocol B: strict global chronology (unseen families in test) | 0.449 | 0.039 | 0.106 | 0.0103 | 0.14 | 0.00 | 0.477 / 0.519 |
+| residual | residual dynamics (predict change of state) | 0.443 | 0.027 | 0.428 | 0.2284 | 0.17 | 0.17 | 0.296 / 0.379 |
+| seed1 | same as main, seed 1 | 0.596 | 0.026 | 0.561 | 0.0031 | 0.00 | 0.00 | 0.365 / 0.400 |
+| seed2 | same as main, seed 2 | 0.389 | 0.026 | 0.428 | 0.2292 | 0.17 | 0.17 | 0.345 / 0.354 |
 
 ## Figures
 

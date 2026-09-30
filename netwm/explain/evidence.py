@@ -9,6 +9,8 @@ RATIO_WORDS = ("ratio", "svc_", "share")
 
 
 def _fmt(name: str, v: float) -> str:
+    if abs(v) < 5e-3:
+        return "0"
     if any(w in name for w in RATIO_WORDS) and abs(v) <= 1.0:
         return f"{100 * v:.0f}%"
     if abs(v) >= 1e6:
@@ -31,7 +33,12 @@ def evidence_sentences(top_features, raw_hist: np.ndarray, raw_baseline: np.ndar
         recent = raw_hist[-last:, j]
         desc = DESCRIPTIONS.get(name, name)
         trend = " → ".join(_fmt(name, v) for v in recent)
-        text = f"{desc[0].upper() + desc[1:]}: {trend} over the last {last} windows (normal: {_fmt(name, raw_baseline[j])})"
-        out.append({"feature": name, "attribution": round(score, 4), "text": text,
+        normal = raw_baseline[j]
+        cur = recent[-1]
+        tol = 0.1 * max(abs(normal), 1e-3)
+        direction = "above normal" if cur > normal + tol else ("below normal" if cur < normal - tol else "near normal")
+        text = (f"{desc[0].upper() + desc[1:]}: {trend} over the last {last} windows "
+                f"(normal: {_fmt(name, normal)}; now {direction})")
+        out.append({"feature": name, "attribution": round(score, 4), "text": text, "direction": direction,
                     "recent": [float(v) for v in recent], "normal": float(raw_baseline[j])})
     return out

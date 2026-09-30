@@ -43,3 +43,6 @@ sampling:
 train:
   batch_size: 512
   epochs: 25
+
+model:
+  hidden: 64          # selected on VALIDATION PR-AUC among {64,128} x benign_ratio {5,20,50} (reports/cic2018_host)
