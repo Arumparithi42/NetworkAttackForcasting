@@ -1,0 +1,11 @@
+data/raw/
+data/interim/
+data/processed/
+artifacts/
+*.pcap
+*.pcapng
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
+.DS_Store
